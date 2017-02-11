@@ -1,6 +1,8 @@
 # oLED Bluetooth Map
 
 Get position from smartphone, generates a map from osm, send map via UART bluefruit to a RGB display.
+App can take pictures and sends them, too! You can switch between nRF (bluefrui) or HM10 (CC2541)
+Bluetooth module.
 
 Support me: <a href="https://flattr.com/submit/auto?fid=o6wo7q&url=https%3A%2F%2Fgithub.com%2Fno-go%2FoLEDBluetoothMap" target="_blank">![Flattr This](stuff/flattr.png)</a>
 

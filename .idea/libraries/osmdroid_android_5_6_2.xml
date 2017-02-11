@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="osmdroid-android-5.6.2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/org.osmdroid/osmdroid-android/5.6.2/jars/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/app/build/intermediates/exploded-aar/org.osmdroid/osmdroid-android/5.6.2/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.osmdroid/osmdroid-android/5.6.2/5eccd7f4697d1f19448450bac773b352d3f5a066/osmdroid-android-5.6.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

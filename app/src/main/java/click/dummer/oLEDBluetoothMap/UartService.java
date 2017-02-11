@@ -73,19 +73,40 @@ public class UartService extends Service {
     public final static String DEVICE_DOES_NOT_SUPPORT_UART =
             "click.dummer.PotiAndLed.DEVICE_DOES_NOT_SUPPORT_UART";
 
-    /*
-    public static final UUID            CCCD = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-    public static final UUID RX_SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
-    public static final UUID    RX_CHAR_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
-    public static final UUID    TX_CHAR_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
-    */
+    public UUID            CCCD;
+    public UUID RX_SERVICE_UUID;
+    public UUID    RX_CHAR_UUID;
+    public UUID    TX_CHAR_UUID;
+    public int           byteMS;
 
-    public static final UUID            CCCD = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-    public static final UUID RX_SERVICE_UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
-    public static final UUID    RX_CHAR_UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
-    public static final UUID    TX_CHAR_UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
+    private final static String CCCD_HM10  = "00002902-0000-1000-8000-00805f9b34fb";
+    private final static String SERV_HM10  = "0000ffe0-0000-1000-8000-00805f9b34fb";
+    private final static String RXUID_HM10 = "0000ffe1-0000-1000-8000-00805f9b34fb";
+    private final static String TXUID_HM10 = "0000ffe1-0000-1000-8000-00805f9b34fb";
+    private final static int  MS_HM10      = 40;
 
-   
+    private final static String CCCD_nRF  = "00002902-0000-1000-8000-00805f9b34fb";
+    private final static String SERV_nRF  = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+    private final static String RXUID_nRF = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+    private final static String TXUID_nRF = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+    private final static int  MS_nRF      = 20;
+
+    public void setNRF51822(boolean b) {
+        if (b) {
+            CCCD = UUID.fromString(CCCD_nRF);
+            RX_SERVICE_UUID = UUID.fromString(SERV_nRF);
+            RX_CHAR_UUID = UUID.fromString(RXUID_nRF);
+            TX_CHAR_UUID = UUID.fromString(TXUID_nRF);
+            byteMS = MS_nRF;
+        } else {
+            CCCD = UUID.fromString(CCCD_HM10);
+            RX_SERVICE_UUID = UUID.fromString(SERV_HM10);
+            RX_CHAR_UUID = UUID.fromString(RXUID_HM10);
+            TX_CHAR_UUID = UUID.fromString(TXUID_HM10);
+            byteMS = MS_HM10;
+        }
+    }
+
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -151,9 +172,7 @@ public class UartService extends Service {
         	
             Log.d(TAG, characteristic.getValue().toString() );
             intent.putExtra(EXTRA_DATA, characteristic.getValue());
-        } else {
-        	
-        }
+        } else {}
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
@@ -275,7 +294,7 @@ public class UartService extends Service {
                     RxChar.setValue(outputBytes);
                     mBluetoothGatt.writeCharacteristic(RxChar);
                     try {
-                        Thread.sleep(40);
+                        Thread.sleep(byteMS);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

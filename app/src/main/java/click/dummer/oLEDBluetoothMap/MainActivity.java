@@ -46,6 +46,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -207,6 +208,8 @@ public class MainActivity extends Activity implements LocationListener {
                         PreferenceManager.getDefaultSharedPreferences(ctx).edit().putString("devAddr",deviceAddress).apply();
                         mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
                         ((TextView) findViewById(R.id.rssival)).setText(mDevice.getName() + " - connecting");
+                        ToggleButton tb = (ToggleButton) findViewById(R.id.toggleButton);
+                        mService.setNRF51822(tb.isChecked());
                         mService.connect(deviceAddress);
                     } else {
                         //Disconnect button pressed
