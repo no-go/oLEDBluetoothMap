@@ -6,7 +6,7 @@ Bluetooth module.
 
 Support me: <a href="https://flattr.com/submit/auto?fid=o6wo7q&url=https%3A%2F%2Fgithub.com%2Fno-go%2FoLEDBluetoothMap" target="_blank">![Flattr This](stuff/flattr.png)</a>
 
-[APK File](https://raw.githubusercontent.com/no-go/oLEDBluetoothMap/master/app/app-release.apk) or (in future) get the App from **f-droid** or [google play](https://play.google.com/store/apps/details?id=click.dummer.oLEDBluetoothMap).
+[APK File](https://raw.githubusercontent.com/no-go/oLEDBluetoothMap/hm10_cc2541/app/app-release.apk) or (in future) get the App from [google play](https://play.google.com/store/apps/details?id=click.dummer.oLEDBluetoothMap).
 
 ## App Icon
 
