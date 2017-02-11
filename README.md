@@ -21,3 +21,8 @@ Support me: <a href="https://flattr.com/submit/auto?fid=o6wo7q&url=https%3A%2F%2
 ![](stuff/screenshot1.jpg)
 
 ![](stuff/screenshot2.jpg)
+
+## Privacy policy
+
+Google Play requires me to disclose this App will take camera pictures and needs access to your position. 
+This App caches the map on your phone. Thus it needs access to your files. The files or your position is not send to me and everything is realy private :-D Ok, OpenStreet Map needs the position to generate the map. Ask them, what they are doing with that stuff :-/ The cam picture does not send it to a network (just bluetooth) or is stored permanently on your phone.
