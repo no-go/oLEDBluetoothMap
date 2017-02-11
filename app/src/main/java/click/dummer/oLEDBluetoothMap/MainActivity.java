@@ -10,8 +10,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
+import android.graphics.drawable.GradientDrawable;
+import android.hardware.Camera;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -20,18 +27,31 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
+import android.renderscript.Type;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
@@ -67,10 +87,23 @@ public class MainActivity extends Activity implements LocationListener {
     private MapView map;
     private ImageView swMap;
     Canvas canvas;
-    private Bitmap bitmap16b;
 
     private int mInterval = 30000;
     private Handler mHandler;
+
+    private static final int CAMERA_REQUEST = 1888;
+    private Camera mCamera;
+    private CameraPreview mPreview;
+    private int cameraId = -1;
+
+    private View.OnClickListener onSendImg = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Bitmap b = getViewBitmap(v);
+            swMap.setImageBitmap(b);
+            sendImg(b);
+        }
+    };
 
     Runnable mStatusChecker = new Runnable() {
         @Override
@@ -139,6 +172,19 @@ public class MainActivity extends Activity implements LocationListener {
             }
         });
 
+        if (checkCameraHardware(ctx)) {
+            mCamera = getCameraInstance();
+            mPreview = new CameraPreview(this, mCamera);
+            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+            preview.addView(mPreview);
+            mPreview.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                }
+            });
+        }
 
         map = (MapView) findViewById(R.id.map);
         swMap = (ImageView) findViewById(R.id.swMap);
@@ -173,15 +219,7 @@ public class MainActivity extends Activity implements LocationListener {
             }
         });
 
-        swMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!btnConnectDisconnect.getText().equals("Connect")) {
-                    swMap.setImageBitmap(getViewBitmap(map));
-                    sendImg();
-                }
-            }
-        });
+        swMap.setOnClickListener(onSendImg);
 
         mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         for (String pro : mLocationManager.getAllProviders()) {
@@ -208,14 +246,15 @@ public class MainActivity extends Activity implements LocationListener {
 
     public void locReq(View v) { whereAmI(); }
 
-    public void sendImg() {
+    public void sendImg(Bitmap bitm) {
+        if (btnConnectDisconnect.getText().equals("Connect")) return;
         byte[] value = new byte[2*IWIDTH*IHIGHT];
         int bCount = 0;
         byte[] dummy;
         byte r,g,b, gUpper, gLower;
         for (int y=0; y<IHIGHT; y++) {
             for (int x=0; x<IWIDTH; x++) {
-                dummy = ByteBuffer.allocate(4).putInt(bitmap16b.getPixel(x, y)).array();
+                dummy = ByteBuffer.allocate(4).putInt(bitm.getPixel(x, y)).array();
                 r = (byte) (dummy[1] >> 3);
                 g = (byte) (dummy[2] >> 2);
                 b = (byte) (dummy[3] >> 3);
@@ -339,16 +378,16 @@ public class MainActivity extends Activity implements LocationListener {
             return null;
         }
 
-        bitmap16b = Bitmap.createBitmap(cacheBitmap);
+        Bitmap bitmap = Bitmap.createBitmap(cacheBitmap);
 
         // Restore the view
         v.destroyDrawingCache();
         v.setWillNotCacheDrawing(willNotCache);
         v.setDrawingCacheBackgroundColor(color);
 
-        canvas = new Canvas(bitmap16b);
+        canvas = new Canvas(bitmap);
 
-        return bitmap16b;
+        return bitmap;
     }
 
     @Override
@@ -357,26 +396,24 @@ public class MainActivity extends Activity implements LocationListener {
         mapController.setZoom(zoom);
         GeoPoint startPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
         mapController.setCenter(startPoint);
-        swMap.setImageBitmap(getViewBitmap(map));
+        Bitmap b = getViewBitmap(map);
+        swMap.setImageBitmap(b);
 
         if (!btnConnectDisconnect.getText().equals("Connect") && autoCb.isChecked()) {
-            sendImg();
+            sendImg(b);
         }
         // ende request
         mLocationManager.removeUpdates(this);
     }
 
     @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-    }
+    public void onStatusChanged(String s, int i, Bundle bundle) {}
 
     @Override
-    public void onProviderEnabled(String s) {
-    }
+    public void onProviderEnabled(String s) {}
 
     @Override
-    public void onProviderDisabled(String s) {
-    }
+    public void onProviderDisabled(String s) {}
 
 
     private void service_init() {
@@ -413,9 +450,50 @@ public class MainActivity extends Activity implements LocationListener {
         }
         super.onDestroy();
     }
+
+    private boolean checkCameraHardware(Context context) {
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public Camera getCameraInstance() {
+        Camera c = null;
+        try {
+            int numberOfCameras = Camera.getNumberOfCameras();
+            for (int i = 0; i < numberOfCameras; i++) {
+                Camera.CameraInfo info = new Camera.CameraInfo();
+                Camera.getCameraInfo(i, info);
+                if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                    Log.d(TAG, "Camera found");
+                    cameraId = i;
+                    c = Camera.open(i);
+                    c.setDisplayOrientation(ori());
+                    break;
+                }
+            }
+        } catch (Exception e) {}
+        return c;
+    }
+
     @Override
     public void onResume() {
         super.onResume();
+        if (checkCameraHardware(ctx)) {
+            mCamera = getCameraInstance();
+            mPreview = new CameraPreview(this, mCamera);
+            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+            preview.addView(mPreview);
+            mPreview.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                }
+            });
+        }
         if (!mBtAdapter.isEnabled()) {
             Log.i(TAG, "onResume - BT not enabled yet");
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -425,9 +503,46 @@ public class MainActivity extends Activity implements LocationListener {
 
     }
 
+    public int ori() {
+        android.hardware.Camera.CameraInfo info =
+                new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(cameraId, info);
+        int rotation = getWindowManager().getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        return result;
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+            //Bitmap mutableBitmap = Bitmap.createScaledBitmap(photo, swMap.getWidth(), swMap.getHeight(), true);
+            Bitmap mutableBitmap = Bitmap.createScaledBitmap(photo, photo.getWidth(), photo.getHeight(), true);
+            swMap.setImageBitmap(mutableBitmap);
+            sendImg(getViewBitmap(swMap));
+        }
+    }
+
     @Override
     public void onConfigurationChanged(android.content.res.Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+
+        mCamera.stopPreview();
+        mCamera.setDisplayOrientation(ori());
+        mCamera.startPreview();
     }
 
     private void showMessage(String msg) {
