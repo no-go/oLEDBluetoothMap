@@ -209,7 +209,8 @@ public class MainActivity extends Activity implements LocationListener {
                         mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
                         ((TextView) findViewById(R.id.rssival)).setText(mDevice.getName() + " - connecting");
                         ToggleButton tb = (ToggleButton) findViewById(R.id.toggleButton);
-                        mService.setNRF51822(tb.isChecked());
+                        ToggleButton tb2 = (ToggleButton) findViewById(R.id.ToggleButtonSlow);
+                        mService.setNRF51822(tb.isChecked(), tb2.isChecked());
                         mService.connect(deviceAddress);
                     } else {
                         //Disconnect button pressed

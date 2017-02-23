@@ -91,7 +91,7 @@ public class UartService extends Service {
     private final static String TXUID_nRF = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
     private final static int  MS_nRF      = 20;
 
-    public void setNRF51822(boolean b) {
+    public void setNRF51822(boolean b, boolean isSlow) {
         if (b) {
             CCCD = UUID.fromString(CCCD_nRF);
             RX_SERVICE_UUID = UUID.fromString(SERV_nRF);
@@ -105,6 +105,7 @@ public class UartService extends Service {
             TX_CHAR_UUID = UUID.fromString(TXUID_HM10);
             byteMS = MS_HM10;
         }
+        if (isSlow) byteMS = 180;
     }
 
     // Implements callback methods for GATT events that the app cares about.  For example,

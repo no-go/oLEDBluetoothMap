@@ -1,8 +1,8 @@
 # oLED Bluetooth Map
 
 Get position from smartphone, generates a map from osm, send map via UART bluefruit to a RGB display.
-App can take pictures and sends them, too! You can switch between nRF (bluefrui) or HM10 (CC2541)
-Bluetooth module.
+App can take pictures and sends them, too! You can switch between nRF (bluefruit) or HM10 (CC2541)
+Bluetooth module. For feather M0 you need my SSD1331 lib (Adafruit based) and switch the app to *nRF* and *slow*.
 
 Support me: <a href="https://flattr.com/submit/auto?fid=o6wo7q&url=https%3A%2F%2Fgithub.com%2Fno-go%2FoLEDBluetoothMap" target="_blank">![Flattr This](stuff/flattr.png)</a>
 
@@ -21,6 +21,8 @@ Support me: <a href="https://flattr.com/submit/auto?fid=o6wo7q&url=https%3A%2F%2
 ![](stuff/screenshot1.jpg)
 
 ![](stuff/screenshot2.jpg)
+
+![feather M0 and SSD1331 oLED](stuff/screenshot3.jpg)
 
 ## Privacy policy
 

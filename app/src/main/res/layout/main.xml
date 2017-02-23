@@ -29,6 +29,13 @@
             android:layout_weight="1"
             android:text="Connect" />
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
         <ToggleButton
             android:text="ToggleButton"
             android:layout_width="wrap_content"
@@ -37,6 +44,16 @@
             android:layout_weight="3"
             android:textOn="nRF"
             android:textOff="HM10"
+            android:checked="false" />
+
+        <ToggleButton
+            android:text="ToggleButtonSlow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/ToggleButtonSlow"
+            android:layout_weight="3"
+            android:textOn="slow"
+            android:textOff="fast"
             android:checked="false" />
 
     </LinearLayout>
