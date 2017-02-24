@@ -10,8 +10,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
+import android.hardware.Camera;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -21,16 +26,22 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -51,10 +62,8 @@ public class MainActivity extends Activity implements LocationListener {
     private static final int IWIDTH = 96;
     private static final int IHIGHT = 64;
     private static final int REQUEST_ENABLE_BT = 2;
-    private int zoom = 14;
-    private static final int UART_PROFILE_CONNECTED = 20;
-    private static final int UART_PROFILE_DISCONNECTED = 21;
-    private int mState = UART_PROFILE_DISCONNECTED;
+    private static final int REQUEST_SELECT_DEVICE = 4711;
+    private int zoom = 6;
     private UartService mService = null;
     private BluetoothDevice mDevice = null;
     private BluetoothAdapter mBtAdapter = null;
@@ -67,10 +76,25 @@ public class MainActivity extends Activity implements LocationListener {
     private MapView map;
     private ImageView swMap;
     Canvas canvas;
-    private Bitmap bitmap16b;
 
     private int mInterval = 30000;
     private Handler mHandler;
+
+    private static final int CAMERA_REQUEST = 1888;
+    private Camera mCamera;
+    private CameraPreview mPreview;
+    private int cameraId = -1;
+
+    private NotificationReceiver nReceiver;
+
+    private View.OnClickListener onSendImg = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Bitmap b = getViewBitmap(v);
+            swMap.setImageBitmap(b);
+            sendImg(b);
+        }
+    };
 
     Runnable mStatusChecker = new Runnable() {
         @Override
@@ -106,6 +130,10 @@ public class MainActivity extends Activity implements LocationListener {
                 Intent intentProj= new Intent(Intent.ACTION_VIEW, Uri.parse(PROJECT_LINK));
                 startActivity(intentProj);
                 break;
+            case R.id.action_search:
+                Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
+                startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
+                break;
             default:
                 return false;
         }
@@ -119,12 +147,14 @@ public class MainActivity extends Activity implements LocationListener {
         ctx = getApplicationContext();
         mHandler = new Handler();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
+
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBtAdapter == null) {
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
+
         btnConnectDisconnect = (Button) findViewById(R.id.btn_select);
         addrField = (EditText) findViewById(R.id.addrText);
         addrField.setText(
@@ -139,6 +169,19 @@ public class MainActivity extends Activity implements LocationListener {
             }
         });
 
+        if (checkCameraHardware(ctx)) {
+            mCamera = getCameraInstance();
+            mPreview = new CameraPreview(this, mCamera);
+            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+            preview.addView(mPreview);
+            mPreview.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                }
+            });
+        }
 
         map = (MapView) findViewById(R.id.map);
         swMap = (ImageView) findViewById(R.id.swMap);
@@ -157,11 +200,19 @@ public class MainActivity extends Activity implements LocationListener {
                 } else {
                     if (btnConnectDisconnect.getText().equals("Connect")) {
 
-                        String deviceAddress = addrField.getText().toString().trim();
-                        PreferenceManager.getDefaultSharedPreferences(ctx).edit().putString("devAddr",deviceAddress).apply();
-                        mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
-                        ((TextView) findViewById(R.id.rssival)).setText(mDevice.getName() + " - connecting");
-                        mService.connect(deviceAddress);
+                        String deviceAddress = addrField.getText().toString().trim().toUpperCase();
+                        if (deviceAddress.length() == 0) {
+                            Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
+                            startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
+                        } else {
+                            PreferenceManager.getDefaultSharedPreferences(ctx).edit().putString("devAddr",deviceAddress).apply();
+                            mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
+                            ((TextView) findViewById(R.id.rssival)).setText(mDevice.getName() + " - connecting");
+                            ToggleButton tb = (ToggleButton) findViewById(R.id.toggleButton);
+                            ToggleButton tb2 = (ToggleButton) findViewById(R.id.ToggleButtonSlow);
+                            mService.setNRF51822(tb.isChecked(), tb2.isChecked());
+                            mService.connect(deviceAddress);
+                        }
                     } else {
                         //Disconnect button pressed
                         if (mDevice != null) {
@@ -173,21 +224,18 @@ public class MainActivity extends Activity implements LocationListener {
             }
         });
 
-        swMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!btnConnectDisconnect.getText().equals("Connect")) {
-                    swMap.setImageBitmap(getViewBitmap(map));
-                    sendImg();
-                }
-            }
-        });
+        swMap.setOnClickListener(onSendImg);
 
         mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         for (String pro : mLocationManager.getAllProviders()) {
             Log.d(TAG, pro);
         }
         mLocationManager.removeUpdates(this);
+
+        nReceiver = new NotificationReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("click.dummer.oLEDBluetoothMap.NOTIFICATION_LISTENER");
+        registerReceiver(nReceiver, filter);
     }
 
     public void zoomIn(View v) {
@@ -208,14 +256,15 @@ public class MainActivity extends Activity implements LocationListener {
 
     public void locReq(View v) { whereAmI(); }
 
-    public void sendImg() {
+    public void sendImg(Bitmap bitm) {
+        if (btnConnectDisconnect.getText().equals("Connect")) return;
         byte[] value = new byte[2*IWIDTH*IHIGHT];
         int bCount = 0;
         byte[] dummy;
         byte r,g,b, gUpper, gLower;
         for (int y=0; y<IHIGHT; y++) {
             for (int x=0; x<IWIDTH; x++) {
-                dummy = ByteBuffer.allocate(4).putInt(bitmap16b.getPixel(x, y)).array();
+                dummy = ByteBuffer.allocate(4).putInt(bitm.getPixel(x, y)).array();
                 r = (byte) (dummy[1] >> 3);
                 g = (byte) (dummy[2] >> 2);
                 b = (byte) (dummy[3] >> 3);
@@ -234,16 +283,67 @@ public class MainActivity extends Activity implements LocationListener {
         }
     }
 
+    class NotificationReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getStringExtra("MSG") != null) {
+                if (intent.getBooleanExtra("posted", true)) {
+                    String msg = intent.getStringExtra("MSG").trim();
+                    String pack = intent.getStringExtra("pack");
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+                    Drawable icon = null;
+                    try {
+                        icon = getApplicationContext().getPackageManager().getApplicationIcon(pack);
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    Bitmap mutableBitmap = Bitmap.createBitmap(IWIDTH, IHIGHT, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(mutableBitmap);
+
+                    // black background
+                    Paint p = new Paint();
+                    p.setStyle(Paint.Style.FILL);
+                    p.setColor(Color.rgb(0, 0, 0));
+                    canvas.drawRect(0, 0, IWIDTH, IHIGHT, p);
+
+                    // add message text
+                    TextPaint tp = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+                    tp.setColor(Color.WHITE);
+                    tp.setTextSize(10);
+                    int textWidth = canvas.getWidth() - 10;
+
+                    StaticLayout textLayout = new StaticLayout(
+                            msg, tp, textWidth,
+                            Layout.Alignment.ALIGN_NORMAL,
+                            1.0f, 0.0f, false
+                    );
+                    int textHeight = textLayout.getHeight();
+
+                    textLayout.draw(canvas);
+
+                    // add icon
+                    icon.setBounds(0, textHeight, 24, textHeight+24);
+                    icon.draw(canvas);
+
+                    swMap.setImageBitmap(mutableBitmap);
+                    sendImg(getViewBitmap(swMap));
+                }
+            }
+        }
+    }
+
+
     //UART service connected/disconnected
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder rawBinder) {
-            mService = ((UartService.LocalBinder) rawBinder).getService();
-            Log.d(TAG, "onServiceConnected mService= " + mService);
-            if (!mService.initialize()) {
-                Log.e(TAG, "Unable to initialize Bluetooth");
-                finish();
+            if (mBtAdapter != null) {
+                mService = ((UartService.LocalBinder) rawBinder).getService();
+                Log.d(TAG, "onServiceConnected mService= " + mService);
+                if (!mService.initialize()) {
+                    Log.e(TAG, "Unable to initialize Bluetooth");
+                    finish();
+                }
             }
-
         }
 
         public void onServiceDisconnected(ComponentName classname) {
@@ -263,7 +363,6 @@ public class MainActivity extends Activity implements LocationListener {
                         Log.d(TAG, "UART_CONNECT_MSG");
                         btnConnectDisconnect.setText("Disconnect");
                         ((TextView) findViewById(R.id.rssival)).setText(mDevice.getName() + " - ready");
-                        mState = UART_PROFILE_CONNECTED;
                     }
                 });
             }
@@ -274,7 +373,6 @@ public class MainActivity extends Activity implements LocationListener {
                         Log.d(TAG, "UART_DISCONNECT_MSG");
                         btnConnectDisconnect.setText("Connect");
                         ((TextView) findViewById(R.id.rssival)).setText("Not Connected");
-                        mState = UART_PROFILE_DISCONNECTED;
                         mService.close();
                         //setUiState();
 
@@ -314,6 +412,8 @@ public class MainActivity extends Activity implements LocationListener {
                 mService.disconnect();
             }
 
+
+
         }
     };
 
@@ -339,16 +439,16 @@ public class MainActivity extends Activity implements LocationListener {
             return null;
         }
 
-        bitmap16b = Bitmap.createBitmap(cacheBitmap);
+        Bitmap bitmap = Bitmap.createBitmap(cacheBitmap);
 
         // Restore the view
         v.destroyDrawingCache();
         v.setWillNotCacheDrawing(willNotCache);
         v.setDrawingCacheBackgroundColor(color);
 
-        canvas = new Canvas(bitmap16b);
+        canvas = new Canvas(bitmap);
 
-        return bitmap16b;
+        return bitmap;
     }
 
     @Override
@@ -357,26 +457,24 @@ public class MainActivity extends Activity implements LocationListener {
         mapController.setZoom(zoom);
         GeoPoint startPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
         mapController.setCenter(startPoint);
-        swMap.setImageBitmap(getViewBitmap(map));
+        Bitmap b = getViewBitmap(map);
+        swMap.setImageBitmap(b);
 
         if (!btnConnectDisconnect.getText().equals("Connect") && autoCb.isChecked()) {
-            sendImg();
+            sendImg(b);
         }
         // ende request
         mLocationManager.removeUpdates(this);
     }
 
     @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-    }
+    public void onStatusChanged(String s, int i, Bundle bundle) {}
 
     @Override
-    public void onProviderEnabled(String s) {
-    }
+    public void onProviderEnabled(String s) {}
 
     @Override
-    public void onProviderDisabled(String s) {
-    }
+    public void onProviderDisabled(String s) {}
 
 
     private void service_init() {
@@ -403,6 +501,9 @@ public class MainActivity extends Activity implements LocationListener {
 
     @Override
     public void onDestroy() {
+        try {
+            unregisterReceiver(nReceiver);
+        } catch (Exception e) {}
         mHandler.removeCallbacks(mStatusChecker);
         try {
             LocalBroadcastManager.getInstance(ctx).unregisterReceiver(UARTStatusChangeReceiver);
@@ -413,10 +514,51 @@ public class MainActivity extends Activity implements LocationListener {
         }
         super.onDestroy();
     }
+
+    private boolean checkCameraHardware(Context context) {
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public Camera getCameraInstance() {
+        Camera c = null;
+        try {
+            int numberOfCameras = Camera.getNumberOfCameras();
+            for (int i = 0; i < numberOfCameras; i++) {
+                Camera.CameraInfo info = new Camera.CameraInfo();
+                Camera.getCameraInfo(i, info);
+                if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                    Log.d(TAG, "Camera found");
+                    cameraId = i;
+                    c = Camera.open(i);
+                    c.setDisplayOrientation(ori());
+                    break;
+                }
+            }
+        } catch (Exception e) {}
+        return c;
+    }
+
     @Override
     public void onResume() {
         super.onResume();
-        if (!mBtAdapter.isEnabled()) {
+        if (checkCameraHardware(ctx)) {
+            mCamera = getCameraInstance();
+            mPreview = new CameraPreview(this, mCamera);
+            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+            preview.addView(mPreview);
+            mPreview.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                }
+            });
+        }
+        if (mBtAdapter != null && !mBtAdapter.isEnabled()) {
             Log.i(TAG, "onResume - BT not enabled yet");
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
@@ -425,9 +567,60 @@ public class MainActivity extends Activity implements LocationListener {
 
     }
 
+    public int ori() {
+        android.hardware.Camera.CameraInfo info =
+                new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(cameraId, info);
+        int rotation = getWindowManager().getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        return result;
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+            //Bitmap mutableBitmap = Bitmap.createScaledBitmap(photo, swMap.getWidth(), swMap.getHeight(), true);
+            Bitmap mutableBitmap = Bitmap.createScaledBitmap(photo, photo.getWidth(), photo.getHeight(), true);
+            swMap.setImageBitmap(mutableBitmap);
+            sendImg(getViewBitmap(swMap));
+        }
+        if (requestCode == REQUEST_SELECT_DEVICE) {
+            //When the DeviceListActivity return, with the selected device address
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                String devAddr = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
+                addrField.setText(devAddr);
+                PreferenceManager.getDefaultSharedPreferences(ctx).edit().putString("devAddr",devAddr).apply();
+                mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(devAddr);
+                ((TextView) findViewById(R.id.rssival)).setText(mDevice.getName() + " - connecting");
+                ToggleButton tb = (ToggleButton) findViewById(R.id.toggleButton);
+                ToggleButton tb2 = (ToggleButton) findViewById(R.id.ToggleButtonSlow);
+                mService.setNRF51822(tb.isChecked(), tb2.isChecked());
+                mService.connect(devAddr);
+            }
+        }
+    }
+
     @Override
     public void onConfigurationChanged(android.content.res.Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+
+        mCamera.stopPreview();
+        mCamera.setDisplayOrientation(ori());
+        mCamera.startPreview();
     }
 
     private void showMessage(String msg) {

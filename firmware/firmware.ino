@@ -16,9 +16,12 @@ byte last;
 short color;
 
 void setup(void) {
-  Serial.begin(9600);
   oled.begin();
+  //oled.fillScreen(0x0050);
+  //oled.print("\n oLED Bluetooth\nMap and Picture\n\n\nHello, dude!");
+  //delay(3000);
   oled.fillScreen(0x0000);
+  Serial.begin(9600);
 }
 
 void serialEvent() {
@@ -39,5 +42,5 @@ void serialEvent() {
 }
 
 void loop() {
-  delay(10); // ?!?
+  delay(40); // ?!?
 }

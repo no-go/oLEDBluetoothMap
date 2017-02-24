@@ -31,6 +31,33 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ToggleButton
+            android:text="ToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/toggleButton"
+            android:layout_weight="3"
+            android:textOn="nRF"
+            android:textOff="HM10"
+            android:checked="false" />
+
+        <ToggleButton
+            android:text="ToggleButtonSlow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/ToggleButtonSlow"
+            android:layout_weight="3"
+            android:textOn="slow"
+            android:textOff="fast"
+            android:checked="false" />
+
+    </LinearLayout>
+
     <TextView
         android:id="@+id/rssival"
         android:layout_width="match_parent"
@@ -70,31 +97,60 @@
             android:layout_weight="1" />
     </LinearLayout>
 
-    <org.osmdroid.views.MapView
-        android:layout_width="96px"
-        android:layout_height="64px"
-        android:id="@+id/map"
-        android:scaleX="4"
-        android:scaleY="4"
-        android:layout_margin="70dp" />
-
-    <ImageView
-        android:layout_width="96px"
-        android:layout_height="64px"
-        android:id="@+id/swMap" />
-
-    <TextView
-        android:text="click to send image"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView"
-        android:gravity="center" />
+        android:layout_height="match_parent">
 
-    <CheckBox
-        android:text="30sec automatic"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/autoCheck" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top|center"
+            android:orientation="vertical"
+            android:id="@+id/liste">
+
+            <org.osmdroid.views.MapView
+                android:layout_width="96px"
+                android:layout_height="64px"
+                android:id="@+id/map"
+                android:scaleX="4"
+                android:scaleY="4"
+                android:layout_margin="70dp" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:scaleType="centerCrop"
+                    android:layout_width="96px"
+                    android:layout_height="64px"
+                    android:id="@+id/swMap" />
+
+                <FrameLayout
+                    android:id="@+id/camera_preview"
+                    android:layout_width="96px"
+                    android:layout_height="64px" />
+
+            </LinearLayout>
+
+            <TextView
+                android:text="click to send image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView"
+                android:gravity="center" />
+
+            <CheckBox
+                android:text="GPS 30sec automatic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/autoCheck" />
+        </LinearLayout>
+    </ScrollView>
+
+
 
 
 </LinearLayout>
