@@ -62,6 +62,7 @@ public class MainActivity extends Activity implements LocationListener {
     private static final int IWIDTH = 96;
     private static final int IHIGHT = 64;
     private static final int REQUEST_ENABLE_BT = 2;
+    private static final int REQUEST_SELECT_DEVICE = 4711;
     private int zoom = 6;
     private UartService mService = null;
     private BluetoothDevice mDevice = null;
@@ -129,6 +130,10 @@ public class MainActivity extends Activity implements LocationListener {
                 Intent intentProj= new Intent(Intent.ACTION_VIEW, Uri.parse(PROJECT_LINK));
                 startActivity(intentProj);
                 break;
+            case R.id.action_search:
+                Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
+                startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
+                break;
             default:
                 return false;
         }
@@ -195,14 +200,19 @@ public class MainActivity extends Activity implements LocationListener {
                 } else {
                     if (btnConnectDisconnect.getText().equals("Connect")) {
 
-                        String deviceAddress = addrField.getText().toString().trim();
-                        PreferenceManager.getDefaultSharedPreferences(ctx).edit().putString("devAddr",deviceAddress).apply();
-                        mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
-                        ((TextView) findViewById(R.id.rssival)).setText(mDevice.getName() + " - connecting");
-                        ToggleButton tb = (ToggleButton) findViewById(R.id.toggleButton);
-                        ToggleButton tb2 = (ToggleButton) findViewById(R.id.ToggleButtonSlow);
-                        mService.setNRF51822(tb.isChecked(), tb2.isChecked());
-                        mService.connect(deviceAddress);
+                        String deviceAddress = addrField.getText().toString().trim().toUpperCase();
+                        if (deviceAddress.length() == 0) {
+                            Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
+                            startActivityForResult(newIntent, REQUEST_SELECT_DEVICE);
+                        } else {
+                            PreferenceManager.getDefaultSharedPreferences(ctx).edit().putString("devAddr",deviceAddress).apply();
+                            mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
+                            ((TextView) findViewById(R.id.rssival)).setText(mDevice.getName() + " - connecting");
+                            ToggleButton tb = (ToggleButton) findViewById(R.id.toggleButton);
+                            ToggleButton tb2 = (ToggleButton) findViewById(R.id.ToggleButtonSlow);
+                            mService.setNRF51822(tb.isChecked(), tb2.isChecked());
+                            mService.connect(deviceAddress);
+                        }
                     } else {
                         //Disconnect button pressed
                         if (mDevice != null) {
@@ -296,25 +306,24 @@ public class MainActivity extends Activity implements LocationListener {
                     p.setColor(Color.rgb(0, 0, 0));
                     canvas.drawRect(0, 0, IWIDTH, IHIGHT, p);
 
-                    // add icon
-                    icon.setBounds(0, 0, 24, 24);
-                    icon.draw(canvas);
-
                     // add message text
                     TextPaint tp = new TextPaint(Paint.ANTI_ALIAS_FLAG);
                     tp.setColor(Color.WHITE);
-                    tp.setTextSize(8);
-                    int textWidth = canvas.getWidth() - 8;
+                    tp.setTextSize(10);
+                    int textWidth = canvas.getWidth() - 10;
 
                     StaticLayout textLayout = new StaticLayout(
                             msg, tp, textWidth,
                             Layout.Alignment.ALIGN_NORMAL,
                             1.0f, 0.0f, false
                     );
-                    canvas.save();
-                    canvas.translate(0, 24);
+                    int textHeight = textLayout.getHeight();
+
                     textLayout.draw(canvas);
-                    canvas.restore();
+
+                    // add icon
+                    icon.setBounds(0, textHeight, 24, textHeight+24);
+                    icon.draw(canvas);
 
                     swMap.setImageBitmap(mutableBitmap);
                     sendImg(getViewBitmap(swMap));
@@ -588,6 +597,20 @@ public class MainActivity extends Activity implements LocationListener {
             Bitmap mutableBitmap = Bitmap.createScaledBitmap(photo, photo.getWidth(), photo.getHeight(), true);
             swMap.setImageBitmap(mutableBitmap);
             sendImg(getViewBitmap(swMap));
+        }
+        if (requestCode == REQUEST_SELECT_DEVICE) {
+            //When the DeviceListActivity return, with the selected device address
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                String devAddr = data.getStringExtra(BluetoothDevice.EXTRA_DEVICE);
+                addrField.setText(devAddr);
+                PreferenceManager.getDefaultSharedPreferences(ctx).edit().putString("devAddr",devAddr).apply();
+                mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(devAddr);
+                ((TextView) findViewById(R.id.rssival)).setText(mDevice.getName() + " - connecting");
+                ToggleButton tb = (ToggleButton) findViewById(R.id.toggleButton);
+                ToggleButton tb2 = (ToggleButton) findViewById(R.id.ToggleButtonSlow);
+                mService.setNRF51822(tb.isChecked(), tb2.isChecked());
+                mService.connect(devAddr);
+            }
         }
     }
 

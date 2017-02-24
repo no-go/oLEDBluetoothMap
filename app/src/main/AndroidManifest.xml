@@ -46,6 +46,10 @@
             </intent-filter>
         </service>
 
+        <activity android:name="click.dummer.oLEDBluetoothMap.DeviceListActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Dialog"></activity>
+
     </application>
 
 </manifest>
