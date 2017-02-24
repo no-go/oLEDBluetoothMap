@@ -26,6 +26,10 @@ Support me: <a href="https://flattr.com/submit/auto?fid=o6wo7q&url=https%3A%2F%2
 
 ![feather M0 and SSD1331 oLED](stuff/screenshot3.jpg)
 
+![](stuff/screenshot4.jpg)
+
+Three examples with Notification access.
+
 ## Privacy policy
 
 Google Play requires me to disclose this App will take camera pictures and needs access to your position. 
