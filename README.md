@@ -8,7 +8,7 @@ If you garant the App notification access, it will send App icon and notificatio
 
 Support me: <a href="https://flattr.com/submit/auto?fid=o6wo7q&url=https%3A%2F%2Fgithub.com%2Fno-go%2FoLEDBluetoothMap" target="_blank">![Flattr This](stuff/flattr.png)</a>
 
-[APK File](https://raw.githubusercontent.com/no-go/oLEDBluetoothMap/master/app/app-release.apk) or get the App from [google play](https://play.google.com/store/apps/details?id=click.dummer.oLEDBluetoothMap).
+Get the App from [google play](https://play.google.com/store/apps/details?id=click.dummer.oLEDBluetoothMap).
 
 ## App Icon
 
