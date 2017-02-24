@@ -105,7 +105,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="top|center"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:id="@+id/liste">
 
             <org.osmdroid.views.MapView
                 android:layout_width="96px"

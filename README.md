@@ -4,6 +4,8 @@ Get position from smartphone, generates a map from osm, send map via UART bluefr
 App can take pictures and sends them, too! You can switch between nRF (bluefruit) or HM10 (CC2541)
 Bluetooth module. For feather M0 you need my SSD1331 lib (Adafruit based) and switch the app to *nRF* and *slow*.
 
+If you garant the App notification access, it will send App icon and notification!
+
 Support me: <a href="https://flattr.com/submit/auto?fid=o6wo7q&url=https%3A%2F%2Fgithub.com%2Fno-go%2FoLEDBluetoothMap" target="_blank">![Flattr This](stuff/flattr.png)</a>
 
 [APK File](https://raw.githubusercontent.com/no-go/oLEDBluetoothMap/hm10_cc2541/app/app-release.apk) or (in future) get the App from [google play](https://play.google.com/store/apps/details?id=click.dummer.oLEDBluetoothMap).
