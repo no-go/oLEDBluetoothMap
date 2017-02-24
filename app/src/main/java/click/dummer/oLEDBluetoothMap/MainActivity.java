@@ -53,6 +53,7 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
 public class MainActivity extends Activity implements LocationListener {
+    public static final String PROJECT_HOME = "https://no-go.github.io/oLEDBluetoothMap/";
     public static final String PROJECT_LINK = "https://github.com/no-go/oLEDBluetoothMap";
     public static final String FLATTR_ID = "o6wo7q";
     public String FLATTR_LINK;
@@ -127,7 +128,7 @@ public class MainActivity extends Activity implements LocationListener {
                 startActivity(intentFlattr);
                 break;
             case R.id.action_project:
-                Intent intentProj= new Intent(Intent.ACTION_VIEW, Uri.parse(PROJECT_LINK));
+                Intent intentProj= new Intent(Intent.ACTION_VIEW, Uri.parse(PROJECT_HOME));
                 startActivity(intentProj);
                 break;
             case R.id.action_search:
