@@ -28,7 +28,7 @@ Support me: <a href="https://flattr.com/submit/auto?fid=o6wo7q&url=https%3A%2F%2
 
 ![](stuff/screenshot4.jpg)
 
-Three examples with Notification access.
+Examples with Notification access (you need to change your android settings).
 
 ## Privacy policy
 
