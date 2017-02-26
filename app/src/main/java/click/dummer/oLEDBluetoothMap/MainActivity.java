@@ -43,6 +43,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
@@ -52,6 +53,10 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
+import de.tavendo.autobahn.WebSocketConnection;
+import de.tavendo.autobahn.WebSocketException;
+import de.tavendo.autobahn.WebSocketHandler;
+
 public class MainActivity extends Activity implements LocationListener {
     public static final String PROJECT_HOME = "https://no-go.github.io/oLEDBluetoothMap/";
     public static final String PROJECT_LINK = "https://github.com/no-go/oLEDBluetoothMap";
@@ -60,6 +65,7 @@ public class MainActivity extends Activity implements LocationListener {
 
     private Context ctx;
     public static final String TAG = MainActivity.class.getSimpleName();
+    final WebSocketConnection mConnection = new WebSocketConnection();
     private static final int IWIDTH = 96;
     private static final int IHIGHT = 64;
     private static final int REQUEST_ENABLE_BT = 2;
@@ -70,6 +76,8 @@ public class MainActivity extends Activity implements LocationListener {
     private BluetoothAdapter mBtAdapter = null;
     private Button btnConnectDisconnect;
     private EditText addrField;
+    private EditText editUrl;
+    private EditText editPort;
     private CheckBox autoCb;
 
     private String PROVIDER = LocationManager.GPS_PROVIDER;
@@ -190,6 +198,11 @@ public class MainActivity extends Activity implements LocationListener {
         //map.setBuiltInZoomControls(true);
         //map.setMultiTouchControls(true);
 
+        editUrl  = (EditText) findViewById(R.id.editUrl);
+        editPort = (EditText) findViewById(R.id.editPort);
+        editUrl.setText(PreferenceManager.getDefaultSharedPreferences(ctx).getString("host", "192.168.1.100"));
+        editPort.setText(PreferenceManager.getDefaultSharedPreferences(ctx).getString("port", "65000"));
+
         service_init();
 
         // Handle Disconnect & Connect button
@@ -258,6 +271,7 @@ public class MainActivity extends Activity implements LocationListener {
     public void locReq(View v) { whereAmI(); }
 
     public void sendImg(Bitmap bitm) {
+        send2ws(bitm);
         if (btnConnectDisconnect.getText().equals("Connect")) return;
         byte[] value = new byte[2*IWIDTH*IHIGHT];
         int bCount = 0;
@@ -281,6 +295,46 @@ public class MainActivity extends Activity implements LocationListener {
             mService.writeRXCharacteristic(value);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void send2ws(final Bitmap bmp) {
+        String hostUriIp = editUrl.getText().toString();
+        String hostPort  = editPort.getText().toString();
+        PreferenceManager.getDefaultSharedPreferences(ctx).edit().putString("host", hostUriIp).apply();
+        PreferenceManager.getDefaultSharedPreferences(ctx).edit().putString("port", hostPort).apply();
+
+        hostUriIp = "ws://" + hostUriIp + ":" + hostPort;
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        final byte[] byteArray = stream.toByteArray();
+
+        try {
+            if (mConnection.isConnected()) mConnection.disconnect();
+
+            mConnection.connect(hostUriIp, new WebSocketHandler() {
+
+                @Override
+                public void onOpen() {
+                    Log.d(TAG, " -> ws open");
+                    mConnection.sendBinaryMessage(byteArray);
+                    mConnection.disconnect();
+                }
+
+                @Override
+                public void onTextMessage(String payload) {
+                    Log.d(TAG, "Server says: " + payload);
+                }
+
+                @Override
+                public void onClose(int code, String reason) {
+                    Log.d(TAG, " -> ws close");
+                }
+            });
+
+        } catch (WebSocketException e) {
+            Log.e(TAG, e.toString());
         }
     }
 

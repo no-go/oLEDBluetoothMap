@@ -11,6 +11,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:weightSum="4"
+        android:background="@android:color/holo_blue_light"
         android:layout_height="wrap_content">
 
         <EditText
@@ -33,6 +34,7 @@
 
     <LinearLayout
         android:orientation="horizontal"
+        android:background="@android:color/holo_blue_light"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -60,6 +62,7 @@
 
     <TextView
         android:id="@+id/rssival"
+        android:background="@android:color/holo_blue_light"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Status"
@@ -69,6 +72,7 @@
 
     <LinearLayout
         android:orientation="horizontal"
+        android:background="@android:color/holo_green_light"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -95,7 +99,15 @@
             android:id="@+id/posBtn"
             android:onClick="locReq"
             android:layout_weight="1" />
+
     </LinearLayout>
+
+    <CheckBox
+        android:text="GPS 30sec automatic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/holo_green_light"
+        android:id="@+id/autoCheck" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -108,6 +120,13 @@
             android:orientation="vertical"
             android:id="@+id/liste">
 
+            <LinearLayout
+                android:orientation="horizontal"
+                android:background="@android:color/holo_green_light"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
             <org.osmdroid.views.MapView
                 android:layout_width="96px"
                 android:layout_height="64px"
@@ -115,10 +134,12 @@
                 android:scaleX="4"
                 android:scaleY="4"
                 android:layout_margin="70dp" />
+            </LinearLayout>
 
             <LinearLayout
                 android:orientation="horizontal"
                 android:gravity="center"
+                android:background="@android:color/holo_orange_light"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -136,17 +157,46 @@
             </LinearLayout>
 
             <TextView
-                android:text="click to send image"
+                android:text="click to send image / take picture"
+                android:background="@android:color/holo_orange_light"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView"
                 android:gravity="center" />
 
-            <CheckBox
-                android:text="GPS 30sec automatic"
+            <TextView
+                android:id="@+id/LblWebsocket"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/autoCheck" />
+                android:text="Send png image to websocket\nor leave it free"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@android:color/black" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="4">
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPersonName"
+                    android:hint="Websocket Server"
+                    android:ems="10"
+                    android:id="@+id/editUrl"
+                    android:layout_weight="1" />
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:ems="10"
+                    android:hint="Port"
+                    android:id="@+id/editPort"
+                    android:layout_weight="3" />
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 

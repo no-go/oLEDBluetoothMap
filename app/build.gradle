@@ -7,8 +7,8 @@ android {
         applicationId "click.dummer.oLEDBluetoothMap"
         minSdkVersion 19
         targetSdkVersion 22
-        versionCode 73
-        versionName "0.73"
+        versionCode 74
+        versionName "0.74"
     }
 
 
@@ -19,9 +19,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+    packagingOptions {
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+    }
 }
 
 dependencies {
     compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'org.osmdroid:osmdroid-android:5.6.2'
+    compile files('libs/autobahn-0.5.0.jar')
+    compile files('libs/jackson-core-asl-1.9.7.jar')
+    compile files('libs/jackson-mapper-asl-1.9.7.jar')
 }
