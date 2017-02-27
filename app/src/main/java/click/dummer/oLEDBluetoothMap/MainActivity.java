@@ -160,8 +160,6 @@ public class MainActivity extends Activity implements LocationListener {
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBtAdapter == null) {
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
-            finish();
-            return;
         }
 
         btnConnectDisconnect = (Button) findViewById(R.id.btn_select);
@@ -381,7 +379,7 @@ public class MainActivity extends Activity implements LocationListener {
                     icon.draw(canvas);
 
                     swMap.setImageBitmap(mutableBitmap);
-                    sendImg(getViewBitmap(swMap));
+                    sendImg(mutableBitmap);
                 }
             }
         }

@@ -48,19 +48,15 @@ public class NotificationService extends NotificationListenerService {
         if (!sbn.isClearable()) return;
         if (msg == null) return;
         if (msg.equals(lastPost) ) return;
-        if (title.equals(lastTitle) ) msg = msg.replaceFirst(title, "");
+        if (title.equals(lastTitle) ) {
+            msg = msg.replaceFirst(title, "");
+            msg = msg.replaceFirst(": ", "");
+        }
 
         lastPost  = msg;
         lastTitle = title;
-        //--------------------------------------------------------
-
-        mPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        int messageLimit = Integer.parseInt(mPreferences.getString("messageLimit", "100"));
 
         Intent i = new  Intent("click.dummer.oLEDBluetoothMap.NOTIFICATION_LISTENER");
-        if (msg.length() > messageLimit) {
-            msg = title;
-        }
         i.putExtra("MSG", msg);
         i.putExtra("pack", pack);
         i.putExtra("posted", true);
