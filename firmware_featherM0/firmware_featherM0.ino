@@ -15,30 +15,11 @@ Adafruit_SSD1331 oled = Adafruit_SSD1331(OLED_CS, OLED_DC, OLED_RESET);
 
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
-byte imgBuffer[96*64*2];
-const int imgBufferSize = 96*64*2;
-int counter = 0;
+byte pix;
 
 bool isFirst = true;
 byte last;
 short color;
-
-void sendToDisplay() {
-  oled.goHome();
-  for(int i=0; i < imgBufferSize; ++i) {
-    byte inbyte = imgBuffer[i];
-    if (!isFirst) {
-      isFirst = true;
-      color = last;
-      color = color<<8;
-      color += inbyte;
-      oled.pushColor(color);
-    } else {
-      isFirst = false;
-      last = inbyte;
-    }
-  }
-}
 
 void setup(void) {
   oled.begin();
@@ -58,21 +39,16 @@ void setup(void) {
 void loop() {
   if (ble.isConnected()) {
     while ( ble.available() ) {
-      imgBuffer[counter] = (byte) ble.read();
+      pix = (byte) ble.read();
       if (!isFirst) {
         isFirst = true;
         color = last;
         color = color<<8;
-        color += imgBuffer[counter];
+        color += pix;
         oled.pushColor(color);
       } else {
         isFirst = false;
-        last = imgBuffer[counter];
-      }
-      counter++;
-      if(counter >= imgBufferSize) {
-        counter = 0;
-        sendToDisplay();
+        last = pix;
       }
     }
   } else {
