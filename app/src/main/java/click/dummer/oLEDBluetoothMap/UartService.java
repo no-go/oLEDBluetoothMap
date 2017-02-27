@@ -104,7 +104,7 @@ public class UartService extends Service {
             TX_CHAR_UUID = UUID.fromString(TXUID_HM10);
             byteMS = MS_HM10;
         }
-        if (isSlow) byteMS = 180;
+        if (isSlow) byteMS = 180; // default: 180
     }
 
     // Implements callback methods for GATT events that the app cares about.  For example,
