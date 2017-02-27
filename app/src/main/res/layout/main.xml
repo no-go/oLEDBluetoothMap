@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
@@ -10,167 +9,18 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:weightSum="4"
-        android:background="@android:color/holo_blue_light"
+        android:gravity="top|center"
+        android:background="@android:color/darker_gray"
         android:layout_height="wrap_content">
 
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/addrText"
-            android:hint="Bluetooth MAC addr"
-            android:layout_weight="3"
-            android:typeface="monospace" />
-
-        <Button
-            android:id="@+id/btn_select"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:layout_weight="1"
-            android:text="Connect" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:background="@android:color/holo_blue_light"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <ToggleButton
-            android:text="ToggleButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/toggleButton"
-            android:layout_weight="3"
-            android:textOn="nRF"
-            android:textOff="HM10"
-            android:checked="false" />
-
-        <ToggleButton
-            android:text="ToggleButtonSlow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/ToggleButtonSlow"
-            android:layout_weight="3"
-            android:textOn="slow"
-            android:textOff="fast"
-            android:checked="false" />
-
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/rssival"
-        android:background="@android:color/holo_blue_light"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Status"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textStyle="italic"
-        android:textColor="@android:color/black" />
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:background="@android:color/holo_green_light"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <Button
-            android:text="zoom in"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/zin"
-            android:onClick="zoomIn"
-            android:layout_weight="1" />
-
-        <Button
-            android:text="zoom out"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/zout"
-            android:onClick="zoomOut"
-            android:layout_weight="1" />
-
-        <Button
-            android:text="GPS Request"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/posBtn"
-            android:onClick="locReq"
-            android:layout_weight="1" />
-
-    </LinearLayout>
-
-    <CheckBox
-        android:text="GPS 30sec automatic"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/holo_green_light"
-        android:id="@+id/autoCheck" />
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="top|center"
-            android:orientation="vertical"
-            android:id="@+id/liste">
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:background="@android:color/holo_green_light"
-                android:gravity="center"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            <org.osmdroid.views.MapView
+            <ImageView
+                android:scaleType="centerCrop"
                 android:layout_width="96px"
                 android:layout_height="64px"
-                android:id="@+id/map"
-                android:scaleX="4"
-                android:scaleY="4"
-                android:layout_margin="70dp" />
-            </LinearLayout>
+                android:id="@+id/swMap"
+                android:background="@android:color/transparent" />
 
-            <LinearLayout
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:background="@android:color/holo_orange_light"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <ImageView
-                    android:scaleType="centerCrop"
-                    android:layout_width="96px"
-                    android:layout_height="64px"
-                    android:id="@+id/swMap" />
-
-                <FrameLayout
-                    android:id="@+id/camera_preview"
-                    android:layout_width="96px"
-                    android:layout_height="64px" />
-
-            </LinearLayout>
-
-            <TextView
-                android:text="click to send image / take picture"
-                android:background="@android:color/holo_orange_light"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/textView"
-                android:gravity="center" />
-
-            <TextView
-                android:id="@+id/LblWebsocket"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Send png image to websocket\nor leave it free"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@android:color/black" />
+    </LinearLayout>
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -196,11 +46,5 @@
                     android:id="@+id/editPort"
                     android:layout_weight="3" />
             </LinearLayout>
-
-        </LinearLayout>
-    </ScrollView>
-
-
-
 
 </LinearLayout>

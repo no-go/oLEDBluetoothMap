@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">oLED Bluetooth Map</string>
-    <string name="flattr_this">Micro-Donate !</string>
-    <string name="projPage">Homepage</string>
-    <string name="cancel">cancel</string>
-    <string name="scan">scan</string>
-    <string name="paired">paired</string>
-    <string name="selectDevice">select Device</string>
+    <string name="app_name">Notify to PNG to WS</string>
 </resources>

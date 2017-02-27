@@ -4,11 +4,9 @@ android {
     buildToolsVersion "25.0.2"
 
     defaultConfig {
-        applicationId "click.dummer.oLEDBluetoothMap"
+        applicationId "click.dummer.Note2Png2Ws"
         minSdkVersion 19
         targetSdkVersion 22
-        versionCode 75
-        versionName "0.75"
     }
 
 
@@ -28,7 +26,6 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:25.2.0'
-    compile 'org.osmdroid:osmdroid-android:5.6.2'
     compile files('libs/autobahn-0.5.0.jar')
     compile files('libs/jackson-core-asl-1.9.7.jar')
     compile files('libs/jackson-mapper-asl-1.9.7.jar')

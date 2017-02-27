@@ -25,7 +25,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			break
 		}
-		log.Printf("recv")
+		//log.Printf("recv")
 		err = ioutil.WriteFile("out.png", []byte(message), 0644)
 		if err != nil {
 			log.Println("error:", err)

@@ -1,54 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="click.dummer.oLEDBluetoothMap">
+    package="click.dummer.Note2Png2Ws">
 
-    <!-- todo: add some mybe features -->
-    <uses-feature
-        android:name="android.hardware.bluetooth_le"
-        android:required="true" />
-    <uses-feature android:name="android.hardware.camera" />
-
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.CAMERA" />
-
 
     <application
         android:label="@string/app_name"
         android:icon="@mipmap/logo"
-        android:theme="@android:style/Theme.Holo.Light">
+        android:theme="@android:style/Theme.Holo.Light.DarkActionBar">
 
         <activity
-            android:name="click.dummer.oLEDBluetoothMap.MainActivity"
-            android:label="@string/app_name"
-            android:windowSoftInputMode="stateHidden"
-            android:configChanges="keyboardHidden|orientation|screenSize">
+            android:name="click.dummer.Note2Png2Ws.MainActivity"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <service android:enabled="true" android:name="click.dummer.oLEDBluetoothMap.UartService" />
-
-        <service android:name="click.dummer.oLEDBluetoothMap.NotificationService"
+        <service android:name="click.dummer.Note2Png2Ws.NotificationService"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-
-        <activity android:name="click.dummer.oLEDBluetoothMap.DeviceListActivity"
-            android:label="@string/app_name"
-            android:theme="@android:style/Theme.Dialog"></activity>
 
     </application>
 
