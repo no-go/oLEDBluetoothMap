@@ -160,6 +160,7 @@ public class MainActivity extends Activity {
         super.onStart();
     }
 
+    /*
     @Override
     public void onDestroy() {
         try {
@@ -169,7 +170,7 @@ public class MainActivity extends Activity {
         }
         super.onDestroy();
     }
-
+*/
     @Override
     public void onResume() {
         super.onResume();
