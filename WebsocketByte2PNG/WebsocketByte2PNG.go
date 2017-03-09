@@ -15,28 +15,14 @@ import (
 var addr = flag.String("addr", "0.0.0.0:65000", "http service address")
 
 var upgrader = websocket.Upgrader{} // use default options
-
 var box = ui.NewVerticalBox()
-//var windowExists = false
-var window = ui.NewWindow("WebsocketByte2PNG", 200, 100, false)
 var messages = 0
 
 func popUp(msg string) {
 	messages++
-	box = ui.NewVerticalBox()
-	box.Append(ui.NewLabel(fmt.Sprintf("%s %d",msg, messages)), false)
-	window.SetChild(box)
-	//if (windowExists == false) {
-		ui.Main(func() {
-	//		windowExists = true
-			window.OnClosing(func(*ui.Window) bool {
-				//windowExists = false
-				ui.Quit()
-				return true
-			})
-			window.Show()
-		})
-	//}
+	ui.QueueMain(func() {
+		box.Append(ui.NewLabel(fmt.Sprintf("%s %d",msg, messages)), false)
+	})
 }
 
 func echo(w http.ResponseWriter, r *http.Request) {
@@ -61,9 +47,22 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func main() {
+func serv() {
 	flag.Parse()
 	log.SetFlags(0)
 	http.HandleFunc("/", echo)
 	log.Fatal(http.ListenAndServe(*addr, nil))
+}
+
+func main() {
+	ui.Main(func() {
+		window := ui.NewWindow("WebsocketByte2PNG", 200, 100, false)
+		window.SetChild(box)
+		window.OnClosing(func(*ui.Window) bool {
+			ui.Quit()
+			return true
+		})
+		window.Show()
+		go serv()
+	})
 }
