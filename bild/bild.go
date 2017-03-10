@@ -10,7 +10,7 @@ type MyHandler struct {
 func (h *MyHandler) Draw(a *ui.Area, dp *ui.AreaDrawParams) {
 	// draw a filled rectangle with dodger blue color
 	bt := []ui.GradientStop{ ui.GradientStop{0.0,0.0,0.0,0.0,0.0} }
-	brush := ui.Brush{ui.Solid,0,0,0,0, 0,0,1,1,1, bt}
+	brush := ui.Brush{ui.Solid, 0.6, 0.4, 0.2, 1.0, 0,0,0,0,0, bt}
 	path := ui.NewPath(ui.Winding)
 	path.AddRectangle(0, 0, dp.AreaWidth, dp.AreaHeight)
 	path.End()
