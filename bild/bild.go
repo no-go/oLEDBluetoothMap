@@ -2,7 +2,10 @@ package main
 
 import (
 	"github.com/andlabs/ui"
+	"fmt"
 )
+
+// go build -ldflags -H=windowsgui bild.go ???
 
 type MyHandler struct {
 }
@@ -41,6 +44,7 @@ func main() {
 		mh := MyHandler{}
 		ar := ui.NewArea(&mh)
 		box.Append(ar, false)
+		box.Append(ui.NewLabel(fmt.Sprintf("nein")), false)
 		window.SetChild(box)
 		window.OnClosing(func(*ui.Window) bool {
 			ui.Quit()
